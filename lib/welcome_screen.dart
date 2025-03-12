@@ -11,12 +11,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Welcome'),
-      ),
-      body: const Center(
-        child: Text('Welcome to the app!'),
-      ),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: EdgeInsets.only(top: 100),
+          width: 350,
+          height: 130,
+          decoration: BoxDecoration(  
+            color: Colors.orangeAccent,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Center(
+            child: Text(
+              'Welcome to CatCare!',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              )
+              )
+          )
+        )
+      )
     );
   }
 }
