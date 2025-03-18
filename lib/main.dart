@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'setting_screen.dart';
+import 'welcome_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SettingScreen()
+      home: WelcomeScreen(),
     );
   }
 }
