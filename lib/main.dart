@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'setting_screen.dart';
+// import 'setting_screen.dart';
 import 'welcome_screen.dart';
 
 void main() {
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SettingScreen()
+      // home: SettingScreen(),
       home: WelcomeScreen(),
     );
   }
