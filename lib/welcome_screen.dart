@@ -100,15 +100,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  void _openProfile(CatProfile profile) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProfileDetailScreen(profile: profile),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,28 +135,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               itemCount: _catProfiles.length,
               itemBuilder: (context, index) {
                 final catProfileInfo = _catProfiles[index];
-                return GestureDetector(
-                  onTap: () => _openProfile(catProfileInfo),
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 234, 176, 109),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        height: 125,
-                        width: 125,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.pets, size: 50),
-                          ],
-                        ),
+                return Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 234, 176, 109),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      SizedBox(height: 10),
-                      Text(catProfileInfo.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                      height: 125,
+                      width: 125,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.pets, size: 50),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(catProfileInfo.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  ],
                 );
               },
             ),
@@ -176,33 +164,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         onPressed: () => _addProfile(),
         icon: Icon(Icons.pets),
         label: const Text("Create Cat Profile"),
-      ),
-    );
-  }
-}
-
-class ProfileDetailScreen extends StatelessWidget {
-  final CatProfile profile;
-
-  const ProfileDetailScreen({Key? key, required this.profile}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(profile.name),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Name: ${profile.name}', style: TextStyle(fontSize: 20)),
-            Text('Age: ${profile.age}', style: TextStyle(fontSize: 20)),
-            Text('Gender: ${profile.gender}', style: TextStyle(fontSize: 20)),
-            // Add more details or actions here
-          ],
-        ),
       ),
     );
   }
