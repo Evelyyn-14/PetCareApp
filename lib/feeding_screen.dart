@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart';
 
 class FeedingScreen extends StatefulWidget {
   const FeedingScreen({super.key});
@@ -98,7 +97,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
                     context: context,
                     initialDate: _selectedDate,
                     firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
+                    lastDate: DateTime(2101)
                   );
                   if (pickedDate != null) {
                     setState(() {
