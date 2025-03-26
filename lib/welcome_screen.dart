@@ -2,11 +2,30 @@ import 'package:flutter/material.dart';
 import 'database_helper.dart';
 
 class CatProfile {
+  final int id;
   final String name;
   final String age;
   final String gender;
 
-  CatProfile({required this.name, required this.age, required this.gender});
+  CatProfile({required this.id, required this.name, required this.age, required this.gender});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'age': age,
+      'gender': gender,
+    };
+  }
+
+  factory CatProfile.fromMap(Map<String, dynamic> map) {
+    return CatProfile(
+      id: map['id'],
+      name: map['name'],
+      age: map['age'].toString(),
+      gender: map['gender'],
+    );
+  }
 }
 
 class WelcomeScreen extends StatefulWidget {
@@ -21,23 +40,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
   final List<CatProfile> _catProfiles = [];
-  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
   void initState() {
     super.initState();
-    _dbHelper.init();
     _loadProfiles();
   }
 
   Future<void> _loadProfiles() async {
-    final profiles = await _dbHelper.queryAllRows();
+    final profiles = await DatabaseHelper.queryAllRows('pets');
     setState(() {
-      _catProfiles.addAll(profiles.map((profile) => CatProfile(
-        name: profile['name'],
-        age: profile['age'].toString(),
-        gender: profile['gender'],
-      )).toList());
+      _catProfiles.clear();
+      _catProfiles.addAll(profiles.map((profile) => CatProfile.fromMap(profile)).toList());
     });
   }
 
@@ -76,20 +90,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  final newProfile = CatProfile(
-                    name: _nameController.text,
-                    age: _ageController.text,
-                    gender: _genderController.text,
-                  );
-                  _catProfiles.add(newProfile);
-                  _dbHelper.insert({
-                    'name': newProfile.name,
-                    'age': int.parse(newProfile.age),
-                    'gender': newProfile.gender,
-                  });
-                });
+              onPressed: () async {
+                final newProfile = CatProfile(
+                  id: 0, 
+                  name: _nameController.text,
+                  age: _ageController.text,
+                  gender: _genderController.text,
+                );
+                await DatabaseHelper.insert('pets', newProfile.toMap().cast<String, Object>());
+                _loadProfiles();
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
@@ -98,6 +107,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         );
       },
     );
+  }
+
+  void _deleteProfile(int id) async {
+    await DatabaseHelper.delete('pets', id);
+    _loadProfiles();
   }
 
   @override
@@ -137,18 +151,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 final catProfileInfo = _catProfiles[index];
                 return Column(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 234, 176, 109),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      height: 125,
-                      width: 125,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.pets, size: 50),
-                        ],
+                    GestureDetector(
+                      onLongPress: () => _deleteProfile(catProfileInfo.id),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 234, 176, 109),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        height: 125,
+                        width: 125,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.pets, size: 50),
+                          ],
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),

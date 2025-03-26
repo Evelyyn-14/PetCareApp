@@ -1,56 +1,64 @@
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite.dart' as sql;
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static const _databaseName = "MyDatabase.db";
-  static const _databaseVersion = 1;
-  static const table = 'my_table';
-  static const columnId = '_id';
-  static const columnName = 'name';
-  static const columnAge = 'age';
-  static const columnGender = 'gender';
-  late Database _db;
+  static Future<void> createTables(sql.Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pets (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        age REAL,
+        gender TEXT,
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS feedings (
+        id INTEGER PRIMARY KEY,
+        pet_id INTEGER,
+        date TEXT,
+        time TEXT,
+        food TEXT,
+        amount REAL,
+        unit TEXT,
+        FOREIGN KEY (pet_id) REFERENCES pets(id)
+      )
+    ''');
+  }
 
-  Future<void> init() async {
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, _databaseName);
-    _db = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
+  static Future<sql.Database> database() async {
+
+    return sql. openDatabase(
+      'database',
+      version:1,
+      onCreate: (sql.Database db, int version) async {
+        await createTables(db);
+      },
     );
   }
 
-  Future _onCreate(Database db, int version) async {
-    await db.execute('''
-CREATE TABLE $table (
-$columnId INTEGER PRIMARY KEY,
-$columnName TEXT NOT NULL,
-$columnAge INTEGER NOT NULL,
-$columnGender TEXT NOT NULL
-)
-''');
+  static Future<void> insert(String table, Map<String, Object> data) async {
+    final db = await DatabaseHelper.database();
+    await db.insert(table, data, conflictAlgorithm: sql.ConflictAlgorithm.replace);
   }
 
-  Future<int> insert(Map<String, dynamic> row) async {
-    return await _db.insert(table, row);
+  static Future<List<Map<String, dynamic>>> queryAllRows(String table) async {
+    final db = await DatabaseHelper.database();
+    return db.query(table);
   }
 
-  Future<List<Map<String, dynamic>>> queryAllRows() async {
-    return await _db.query(table);
+  static Future<void> delete(String table, int id) async {
+    final db = await DatabaseHelper.database();
+    await db.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<int> queryRowCount() async {
-    final results = await _db.rawQuery('SELECT COUNT(*) FROM $table');
-    return Sqflite.firstIntValue(results) ?? 0;
+  static Future<void> update(String table, Map<String, Object> data) async {
+    final db = await DatabaseHelper.database();
+    await db.update(table, data, where: 'id = ?', whereArgs: [data['id']]);
   }
 
-  Future<int> update(Map<String, dynamic> row) async {
-    return await _db.update(table, row, where: '$columnId = ?', whereArgs: [row[columnId]]);
-  }
-
-  Future<int> delete(int id) async {
-    return await _db.delete(table, where: '$columnId = ?', whereArgs: [id]);
+  Future<void> init() async {
+    final db = await DatabaseHelper.database();
+    await createTables(db);
   }
 }
