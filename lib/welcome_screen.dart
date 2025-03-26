@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'database_helper.dart';
 
 class CatProfile {
   final String name;
@@ -20,6 +21,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
   final List<CatProfile> _catProfiles = [];
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _dbHelper.init();
+    _loadProfiles();
+  }
+
+  Future<void> _loadProfiles() async {
+    final profiles = await _dbHelper.queryAllRows();
+    setState(() {
+      _catProfiles.addAll(profiles.map((profile) => CatProfile(
+        name: profile['name'],
+        age: profile['age'].toString(),
+        gender: profile['gender'],
+      )).toList());
+    });
+  }
 
   void _addProfile() {
     _nameController.clear();
@@ -58,11 +78,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  _catProfiles.add(CatProfile(
+                  final newProfile = CatProfile(
                     name: _nameController.text,
                     age: _ageController.text,
                     gender: _genderController.text,
-                  ));
+                  );
+                  _catProfiles.add(newProfile);
+                  _dbHelper.insert({
+                    'name': newProfile.name,
+                    'age': int.parse(newProfile.age),
+                    'gender': newProfile.gender,
+                  });
                 });
                 Navigator.of(context).pop();
               },

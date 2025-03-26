@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
-import 'setting_screen.dart';
-import 'welcome_screen.dart';
+import 'package:pet_care_app/feeding_screen.dart';
+import 'package:pet_care_app/welcome_screen.dart';
+import 'package:pet_care_app/setting_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SettingScreen()
-      home: WelcomeScreen(),
+      title: 'Pet Care App',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Pet Care App'),
+        ),
+        body: FeedingScreen()
+        // body: WelcomeScreen(),
+      ),
+      routes: {
+        '/welcome': (context) => WelcomeScreen(),
+        '/feeding': (context) => FeedingScreen(),
+        '/setting': (context) => SettingScreen(),
+      
+      },
     );
   }
 }
