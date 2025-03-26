@@ -18,12 +18,14 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text('Pet Care App'),
         ),
-        body: WelcomeScreen(),
+        body: FeedingScreen()
+        // body: WelcomeScreen(),
       ),
       routes: {
         '/welcome': (context) => WelcomeScreen(),
         '/feeding': (context) => FeedingScreen(),
         '/setting': (context) => SettingScreen(),
+      
       },
     );
   }
