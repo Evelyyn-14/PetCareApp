@@ -5,8 +5,7 @@ import 'package:pet_care_app/home_screen.dart';
 import 'package:pet_care_app/welcome_screen.dart';
 import 'package:pet_care_app/setting_screen.dart';
 import 'package:pet_care_app/database_helper.dart';
-import 'package:pet_care_app/home_screen.dart';
-
+import 'package:pet_care_app/reminder_screen.dart';
 void main() {
   runApp(MyApp());
 }
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
         '/setting': (context) => SettingScreen(),
         '/care': (context) => CareScreen(),
         '/home': (context) => HomeScreen(),
-        // '/reminder' () => ReminderScreen(),
+        '/reminder': (context) => ReminderScreen(),
 
       
       },

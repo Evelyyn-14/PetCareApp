@@ -104,16 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (index == 1) {
                         Navigator.pushNamed(context, '/care');
                       }
-                      if (index == 2) {
-                        Navigator.pushNamed(context, '/home');
-                      }
                       if (index == 3) {
                         Navigator.pushNamed(context, '/reminder');
                       }
                       if (index == 4) {
                         Navigator.pushNamed(context, '/setting');
                       }
-                      // Add more navigation logic for other icons if needed
                     },
                     child: Container(
                       width: 70,
