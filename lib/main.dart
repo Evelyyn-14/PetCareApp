@@ -26,9 +26,12 @@ class MyApp extends StatelessWidget {
         // body: WelcomeScreen(),
       ),
       routes: {
-        '/welcome': (context) => WelcomeScreen(),
         '/feeding': (context) => FeedingScreen(),
         '/setting': (context) => SettingScreen(),
+        '/care': (context) => CareScreen(),
+        '/home': (context) => HomeScreen(),
+        // '/reminder' () => ReminderScreen(),
+
       
       },
     );

@@ -96,18 +96,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icons.calendar_month, 
                     Icons.settings,
                   ];
-                  return Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(228, 252, 239, 165),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        icons[index],
-                        size: 50,
-                        color: Colors.black,
+                  return GestureDetector(
+                    onTap: () {
+                      if (index == 0) {
+                        Navigator.pushNamed(context, '/feeding');
+                      }
+                      if (index == 1) {
+                        Navigator.pushNamed(context, '/care');
+                      }
+                      if (index == 2) {
+                        Navigator.pushNamed(context, '/home');
+                      }
+                      if (index == 3) {
+                        Navigator.pushNamed(context, '/reminder');
+                      }
+                      if (index == 4) {
+                        Navigator.pushNamed(context, '/setting');
+                      }
+                      // Add more navigation logic for other icons if needed
+                    },
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(228, 252, 239, 165),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          icons[index],
+                          size: 50,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   );
