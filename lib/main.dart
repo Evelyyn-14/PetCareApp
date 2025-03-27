@@ -4,6 +4,7 @@ import 'package:pet_care_app/feeding_screen.dart';
 import 'package:pet_care_app/welcome_screen.dart';
 import 'package:pet_care_app/setting_screen.dart';
 import 'package:pet_care_app/database_helper.dart';
+import 'package:pet_care_app/home_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,13 +21,16 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text('Pet Care App'),
         ),
-        body: CareScreen()
+        body: HomeScreen()
         // body: WelcomeScreen(),
       ),
       routes: {
         '/welcome': (context) => WelcomeScreen(),
         '/feeding': (context) => FeedingScreen(),
         '/setting': (context) => SettingScreen(),
+        '/home': (context) => HomeScreen(),
+        '/care': (context) => CareScreen(),
+        // '/reminder': (context) => ReminderScreen(),
       
       },
     );

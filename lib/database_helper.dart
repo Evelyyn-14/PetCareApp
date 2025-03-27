@@ -1,6 +1,4 @@
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sql;
-import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static Future<void> createTables(sql.Database db) async {

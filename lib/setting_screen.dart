@@ -18,8 +18,7 @@ class _SettingScreenState extends State<SettingScreen> {
         appBar: AppBar(
           leading: IconButton(
               icon: Icon(Icons.arrow_back),
-              onPressed: () => Null,
-            ),
+              onPressed: () => Navigator.pushNamed(context, '/home')),
         ),
         body: Column(
           children: [

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart';
+// import 'database_helper.dart';
 import 'package:intl/intl.dart';
 
 class FeedingScreen extends StatefulWidget {
@@ -361,7 +361,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Null,
+          onPressed: () => Navigator.pushNamed(context, '/home'),
         ),
         title: Text(
           'Feeding Schedule',
