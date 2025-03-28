@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class CatProfile {
-  final int id; 
+  final int id;
   final String name;
   final String age;
   final String gender;
@@ -11,7 +13,7 @@ class CatProfile {
 }
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({Key? key}) : super(key: key);
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -29,12 +31,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     _loadProfiles();
   }
 
-  //loads saved profiles from the database
+  //loads profiles from the database
   Future<void> _loadProfiles() async {
     final profiles = await DatabaseHelper.queryAllRows('pets');
     setState(() {
       _catProfiles.addAll(profiles.map((profile) => CatProfile(
-        id: profile['id'], // Map the id from the database
+        id: profile['id'],
         name: profile['name'],
         age: profile['age'].toString(),
         gender: profile['gender'],
@@ -42,7 +44,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     });
   }
 
-  //saves the profile information to the database
+  //saves profiles to the database
   void _saveProfile() async {
     final data = {
       'name': _nameController.text,
@@ -54,7 +56,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     await db.insert('pets', data);
   }
 
-  //deletes the profile information from the database
+  //deletes profiles from the database
   Future<void> _deleteProfile(int index, String name) async {
     final db = await DatabaseHelper.instance.database;
     await db.delete('pets', where: 'name = ?', whereArgs: [name]);
@@ -63,33 +65,34 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     });
   }
 
-  //edits the profile information in the database
+  //edits profiles in the database
   Future<void> _editProfile(int index, String name) async {
     final updatedName = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController editNameController = TextEditingController(text: name);
+        final TextEditingController editNameController =
+            TextEditingController(text: name);
         return AlertDialog(
-          title: Text('Edit Profile'),
+          title: const Text('Edit Profile'),
           content: TextField(
             controller: editNameController,
-            decoration: InputDecoration(labelText: 'Cat Name'),
+            decoration: const InputDecoration(labelText: 'Cat Name'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(editNameController.text),
-              child: Text('Save'),
+              onPressed: () =>
+                  Navigator.of(context).pop(editNameController.text),
+              child: const Text('Save'),
             ),
           ],
         );
       },
     );
 
-    //updates the profile information in the database
     if (updatedName != null && updatedName.isNotEmpty) {
       final db = await DatabaseHelper.instance.database;
       await db.update(
@@ -109,7 +112,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  //opens a dialog to add a new profile
+  //adds a new profile
   void _addProfile() {
     _nameController.clear();
     _ageController.clear();
@@ -119,21 +122,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Enter Cat Info'),
+          title: const Text('Enter Cat Info'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Cat Name'),
+                decoration: const InputDecoration(labelText: 'Cat Name'),
               ),
               TextField(
                 controller: _ageController,
-                decoration: InputDecoration(labelText: 'Cat Age'),
+                decoration: const InputDecoration(labelText: 'Cat Age'),
               ),
               TextField(
                 controller: _genderController,
-                decoration: InputDecoration(labelText: 'Cat Gender'),
+                decoration: const InputDecoration(labelText: 'Cat Gender'),
               ),
             ],
           ),
@@ -142,13 +145,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 setState(() {
                   _catProfiles.add(CatProfile(
-                    id: _catProfiles.length + 1, // Assign a temporary id
+                    id: _catProfiles.length + 1,
                     name: _nameController.text,
                     age: _ageController.text,
                     gender: _genderController.text,
@@ -157,7 +160,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 _saveProfile();
                 Navigator.of(context).pop();
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -167,107 +170,127 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              margin: EdgeInsets.only(top: 100),
-              width: 350,
-              height: 130,
-              decoration: BoxDecoration(
-                color: Colors.orangeAccent,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Center(
-                child: Text(
-                  'Welcome to CatCare!',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final backgroundColor =
+            themeProvider.isDarkMode ? Colors.black : Colors.white;
+        final headerColor = themeProvider.isDarkMode
+            ? Colors.orange
+            : Colors.orangeAccent;
+        final cardColor = themeProvider.isDarkMode
+            ? Colors.grey[850]
+            : const Color.fromARGB(255, 234, 176, 109);
+        final textColor =
+            themeProvider.isDarkMode ? Colors.white : Colors.black;
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          body: Column(
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: const EdgeInsets.only(top: 100),
+                  width: 350,
+                  height: 130,
+                  decoration: BoxDecoration(
+                    color: headerColor,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Welcome to CatCare!',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Expanded(
-            child: GridView.builder(
-              padding: EdgeInsets.all(40),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-              ),
-              itemCount: _catProfiles.length,
-              itemBuilder: (context, index) {
-                final catProfileInfo = _catProfiles[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/home',
-                      arguments: catProfileInfo.id, // Pass the petId to the HomeScreen
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      Stack(
+              const SizedBox(height: 20),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(40),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                  ),
+                  itemCount: _catProfiles.length,
+                  itemBuilder: (context, index) {
+                    final catProfileInfo = _catProfiles[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/home',
+                          arguments: catProfileInfo.id,
+                        );
+                      },
+                      child: Column(
                         children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 234, 176, 109),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            height: 125,
-                            width: 125,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.pets, size: 50),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            top: 5,
-                            right: 5,
-                            child: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _editProfile(index, catProfileInfo.name);
-                                } else if (value == 'delete') {
-                                  _deleteProfile(index, catProfileInfo.name);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Edit'),
+                          Stack(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Delete'),
+                                height: 125,
+                                width: 125,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.pets, size: 50),
+                                  ],
                                 ),
-                              ],
-                              icon: Icon(Icons.more_vert),
-                            ),
+                              ),
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: PopupMenuButton<String>(
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      _editProfile(index, catProfileInfo.name);
+                                    } else if (value == 'delete') {
+                                      _deleteProfile(index, catProfileInfo.name);
+                                    }
+                                  },
+                                  itemBuilder: (context) => const [
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text('Edit'),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('Delete'),
+                                    ),
+                                  ],
+                                  icon: const Icon(Icons.more_vert),
+                                ),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 10),
+                          Text(catProfileInfo.name,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor)),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      Text(catProfileInfo.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addProfile(),
-        icon: Icon(Icons.pets),
-        label: const Text("Create Cat Profile"),
-      ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _addProfile(),
+            icon: const Icon(Icons.pets),
+            label: const Text("Create Cat Profile"),
+          ),
+        );
+      },
     );
   }
 }

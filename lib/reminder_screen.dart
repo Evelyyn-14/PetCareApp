@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
 import 'database_helper.dart';
+import 'theme_provider.dart';
 
 class ReminderScreen extends StatefulWidget {
   final int petId;
-  const ReminderScreen({super.key, required this.petId});
+  const ReminderScreen({Key? key, required this.petId}) : super(key: key);
 
   @override
   State<ReminderScreen> createState() => _ReminderScreenState();
@@ -21,7 +23,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     _loadRemindersFromDatabase();
   }
 
-  //gets the reminders from the database
+  //load reminders from the database
   Future<void> _loadRemindersFromDatabase() async {
     final reminders = await DatabaseHelper.getRemindersByPetId(widget.petId);
     setState(() {
@@ -29,7 +31,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     });
   }
 
-  //adds a reminder to the database
+  //add a new reminder
   void _addReminder() {
     TextEditingController titleController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
@@ -39,20 +41,20 @@ class _ReminderScreenState extends State<ReminderScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add Reminder'),
+          title: const Text('Add Reminder'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: const InputDecoration(labelText: 'Title'),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Time'),
+                decoration: const InputDecoration(labelText: 'Time'),
                 onTap: () async {
                   TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
@@ -74,7 +76,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
@@ -91,7 +93,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 Navigator.of(context).pop();
                 _loadRemindersFromDatabase();
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -99,11 +101,13 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
-  //edits a reminder in the database
+  //edit an existing reminder
   void _editReminder(int index) {
     final reminder = _reminders[index];
-    TextEditingController titleController = TextEditingController(text: reminder['title']);
-    TextEditingController descriptionController = TextEditingController(text: reminder['description']);
+    TextEditingController titleController =
+        TextEditingController(text: reminder['title']);
+    TextEditingController descriptionController =
+        TextEditingController(text: reminder['description']);
     TimeOfDay selectedTime = TimeOfDay(
       hour: int.parse(reminder['time'].split(":")[0]),
       minute: int.parse(reminder['time'].split(":")[1].split(" ")[0]),
@@ -113,20 +117,20 @@ class _ReminderScreenState extends State<ReminderScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Reminder'),
+          title: const Text('Edit Reminder'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: const InputDecoration(labelText: 'Title'),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Time'),
+                decoration: const InputDecoration(labelText: 'Time'),
                 onTap: () async {
                   TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
@@ -148,7 +152,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
@@ -160,11 +164,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
                   'description': descriptionController.text,
                   'time': selectedTime.format(context),
                 };
-                await DatabaseHelper.updateReminder(updatedReminder.cast<String, Object>());
+                await DatabaseHelper.updateReminder(
+                    updatedReminder.cast<String, Object>());
                 Navigator.of(context).pop();
-                _loadRemindersFromDatabase(); 
+                _loadRemindersFromDatabase();
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -172,102 +177,127 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
-  //deletes a reminder from the database
+  //delete an existing reminder
   void _deleteReminder(int index) async {
     final reminderId = _reminders[index]['id'];
     if (reminderId != null) {
-      await DatabaseHelper.deleteReminder(reminderId); 
+      await DatabaseHelper.deleteReminder(reminderId);
       _loadRemindersFromDatabase();
     }
   }
 
+  //get reminders for the selected day
   List<Map<String, dynamic>> _getRemindersForDay(DateTime day) {
     return _reminders.where((reminder) {
-      return DateTime.parse(reminder['date']).day == day.day &&
-          DateTime.parse(reminder['date']).month == day.month &&
-          DateTime.parse(reminder['date']).year == day.year;
+      final reminderDate = DateTime.parse(reminder['date']);
+      return reminderDate.day == day.day &&
+          reminderDate.month == day.month &&
+          reminderDate.year == day.year;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(
-            context,
-            '/home',
-            arguments: widget.petId,
-          ),
-        ),
-        title: Text('Reminders'),
-      ),
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2100, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.orangeAccent,
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.blueAccent,
-                shape: BoxShape.circle,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final backgroundColor =
+            themeProvider.isDarkMode ? Colors.black : Colors.white;
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            backgroundColor: themeProvider.isDarkMode ? Colors.orange : Colors.orangeAccent,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/home',
+                arguments: widget.petId,
               ),
             ),
+            title: const Text('Reminders'),
           ),
-          SizedBox(height: 20),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _getRemindersForDay(_selectedDay ?? _focusedDay).length,
-              itemBuilder: (context, index) {
-                final reminder = _getRemindersForDay(_selectedDay ?? _focusedDay)[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  child: ListTile(
-                    title: Text(reminder['title']),
-                    subtitle: Text('${reminder['description']} at ${reminder['time']}'),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          _editReminder(index);
-                        } else if (value == 'delete') {
-                          _deleteReminder(index);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Edit'),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Delete'),
-                        ),
-                      ],
-                    ),
+          body: Column(
+            children: [
+              TableCalendar(
+                firstDay: DateTime.utc(2000, 1, 1),
+                lastDay: DateTime.utc(2100, 12, 31),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: themeProvider.isDarkMode
+                        ? Colors.orange
+                        : Colors.orangeAccent,
+                    shape: BoxShape.circle,
                   ),
-                );
-              },
-            ),
+                  selectedDecoration: BoxDecoration(
+                    color: themeProvider.isDarkMode
+                        ? Colors.orange[700]
+                        : Colors.blueAccent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _getRemindersForDay(_selectedDay ?? _focusedDay).length,
+                  itemBuilder: (context, index) {
+                    final reminder = _getRemindersForDay(_selectedDay ?? _focusedDay)[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      child: ListTile(
+                        title: Text(reminder['title'],
+                            style: TextStyle(
+                                color: themeProvider.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black)),
+                        subtitle: Text(
+                          '${reminder['description']} at ${reminder['time']}',
+                          style: TextStyle(
+                              color: themeProvider.isDarkMode
+                                  ? Colors.white70
+                                  : Colors.black54),
+                        ),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _editReminder(index);
+                            } else if (value == 'delete') {
+                              _deleteReminder(index);
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit'),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addReminder,
-        child: Icon(Icons.add),
-      ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _addReminder,
+            child: const Icon(Icons.add),
+          ),
+        );
+      },
     );
   }
 }
