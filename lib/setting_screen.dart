@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pet_care_app/database_helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:pet_care_app/database_helper.dart';
 
 class SettingScreen extends StatefulWidget {
-  const SettingScreen({super.key});
+  final int petId; // Accept petId as a parameter
+
+  const SettingScreen({super.key, required this.petId});
 
   @override
   State<SettingScreen> createState() => _SettingScreenState();
@@ -19,9 +20,9 @@ class _SettingScreenState extends State<SettingScreen> {
       home: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pushNamed(context, '/home')
-            ),
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pushNamed(context,'/home',arguments: widget.petId),
+          ),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -64,7 +65,10 @@ class _SettingScreenState extends State<SettingScreen> {
                     SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () async {
-                        Navigator.pushNamed(context, '/welcome');
+                        Navigator.pushNamed(
+                          context,
+                          '/welcome',
+                        );
                       },
                       icon: Icon(Icons.switch_account),
                       label: Text('Switch Profile'),

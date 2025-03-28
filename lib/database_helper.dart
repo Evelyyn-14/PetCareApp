@@ -72,6 +72,7 @@ class DatabaseHelper {
         date TEXT,
         time TEXT,
         food TEXT,
+        type TEXT, -- Added 'type' column
         amount REAL,
         unit TEXT,
         FOREIGN KEY (pet_id) REFERENCES pets(id)
@@ -124,6 +125,37 @@ class DatabaseHelper {
   static Future<List<Map<String, dynamic>>> getFeedingsByPetId(int petId) async {
     final db = await DatabaseHelper.instance.database;
     return db.query('feedings', where: 'pet_id = ?', whereArgs: [petId]);
+  }
+
+  //insert feeding logs into the feedings table
+  static Future<void> insertFeedingLog(Map<String, Object> feedingLog) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.insert(
+      'feedings',
+      feedingLog,
+      conflictAlgorithm: sql.ConflictAlgorithm.replace,
+    );
+  }
+
+  //deletes feeding log by its ID
+  static Future<void> deleteFeedingLog(int id) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete(
+      'feedings',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  //updates feeding log
+  static Future<void> updateFeedingLog(Map<String, Object> feedingLog) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.update(
+      'feedings',
+      feedingLog,
+      where: 'id = ?',
+      whereArgs: [feedingLog['id']],
+    );
   }
 
   //initializes the database

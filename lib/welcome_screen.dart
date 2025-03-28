@@ -3,11 +3,12 @@ import 'database_helper.dart';
 import 'home_screen.dart';
 
 class CatProfile {
+  final int id; 
   final String name;
   final String age;
   final String gender;
 
-  CatProfile({required this.name, required this.age, required this.gender});
+  CatProfile({required this.id, required this.name, required this.age, required this.gender});
 }
 
 class WelcomeScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final profiles = await DatabaseHelper.queryAllRows('pets');
     setState(() {
       _catProfiles.addAll(profiles.map((profile) => CatProfile(
+        id: profile['id'], // Map the id from the database
         name: profile['name'],
         age: profile['age'].toString(),
         gender: profile['gender'],
@@ -99,6 +101,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       );
       setState(() {
         _catProfiles[index] = CatProfile(
+          id: _catProfiles[index].id,
           name: updatedName,
           age: _catProfiles[index].age,
           gender: _catProfiles[index].gender,
@@ -146,6 +149,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               onPressed: () {
                 setState(() {
                   _catProfiles.add(CatProfile(
+                    id: _catProfiles.length + 1, // Assign a temporary id
                     name: _nameController.text,
                     age: _ageController.text,
                     gender: _genderController.text,
@@ -200,12 +204,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 final catProfileInfo = _catProfiles[index];
                 return GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(),
-                        settings: RouteSettings(arguments: catProfileInfo),
-                      ),
+                      '/home',
+                      arguments: catProfileInfo.id, // Pass the petId to the HomeScreen
                     );
                   },
                   child: Column(

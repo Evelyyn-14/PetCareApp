@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int petId;
+  const HomeScreen({super.key, required this.petId});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -99,16 +100,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   return GestureDetector(
                     onTap: () {
                       if (index == 0) {
-                        Navigator.pushNamed(context, '/feeding');
+                      Navigator.pushNamed(context, '/feeding', arguments: widget.petId);
                       }
                       if (index == 1) {
-                        Navigator.pushNamed(context, '/care');
+                        Navigator.pushNamed(context, '/care', arguments: widget.petId);
                       }
                       if (index == 3) {
-                        Navigator.pushNamed(context, '/reminder');
+                        Navigator.pushNamed(context, '/reminder', arguments: widget.petId);
                       }
                       if (index == 4) {
-                        Navigator.pushNamed(context, '/setting');
+                        Navigator.pushNamed(context, '/setting', arguments: widget.petId);
                       }
                     },
                     child: Container(

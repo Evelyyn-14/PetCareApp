@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CareScreen extends StatefulWidget {
-  const CareScreen({super.key});
+  final int petId;
+  const CareScreen({super.key, required this.petId});
 
   @override
   State<CareScreen> createState() => _CareScreenState();
@@ -14,8 +15,7 @@ class _CareScreenState extends State<CareScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/home'
-          ),
+          onPressed: () => Navigator.pushNamed(context, '/home',arguments: widget.petId),
         )
       ),
       body: SingleChildScrollView(

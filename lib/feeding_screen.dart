@@ -3,15 +3,19 @@ import 'database_helper.dart';
 import 'package:intl/intl.dart';
 
 class FeedingScreen extends StatefulWidget {
-  const FeedingScreen({super.key});
+  final int petId; // Ensure petId is passed when navigating to this screen
 
-  set selectedPetId(int selectedPetId) {}
+  const FeedingScreen({super.key, required this.petId});
 
   @override
   State<FeedingScreen> createState() => _FeedingScreenState();
 }
 
 class _FeedingScreenState extends State<FeedingScreen> {
+  int? _selectedPetId;
+  List<Map<String, String>> _feedings = [];
+  List<Map<String, String>> _filteredFeedings = [];
+
   List<String> weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   Color activeCardColor = Color.fromARGB(255, 244, 189, 118);
@@ -20,48 +24,22 @@ class _FeedingScreenState extends State<FeedingScreen> {
   Color activeTextColor = Colors.black;
   Color inactiveTextColor = Colors.white;
 
-  //default values for new feeding log
   String _selectedType = 'Food';
   String _selectedUnit = 'Grams';
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  //list of feedings
-  List<Map<String, dynamic>> _feedings = [];
-  List<Map<String, dynamic>> _filteredFeedings = [];
-
-  //gets the selected pet id in order to load feedings
-  int? _selectedPetId;
-
   @override
   void initState() {
     super.initState();
+    _selectedPetId = widget.petId;
     _loadFeedings();
   }
 
-  //loads feedings from database
-  Future<void> _loadFeedings() async {
-    if (_selectedPetId != null) {
-      final feedings = await DatabaseHelper.getFeedingsByPetId(_selectedPetId!);
-      setState(() {
-        _feedings = feedings.map((feeding) => {
-          'name': feeding['food'],
-          'type': feeding['type'],
-          'amount': feeding['amount'].toString(),
-          'unit': feeding['unit'],
-          'date': feeding['date'],
-          'time': feeding['time'],
-        }).toList();
-      });
-    }
-  }
-
-  //gets the index of the day
   int _getDayIndex(DateTime date) {
-    return date.weekday - 1; 
+    return date.weekday - 1; // Convert to 0-based index (Monday = 0, Sunday = 6)
   }
 
-  //filters feedings by day
   void _filterFeedingsByDay(int dayIndex) {
     setState(() {
       _filteredFeedings = _feedings.where((feeding) {
@@ -71,286 +49,315 @@ class _FeedingScreenState extends State<FeedingScreen> {
     });
   }
 
-  //adds a new feeding log
-  void _addFeeding() {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController amountController = TextEditingController();
+  Future<void> _loadFeedings() async {
+    if (_selectedPetId != null) {
+      final feedings = await DatabaseHelper.getFeedingsByPetId(_selectedPetId!);
+      setState(() {
+        _feedings = feedings.map((feeding) => {
+          'id': feeding['id'].toString(),
+          'food': feeding['food'] as String,
+          'type': feeding['type'] as String,
+          'amount': feeding['amount'].toString(),
+          'unit': feeding['unit'] as String,
+          'date': feeding['date'] as String,
+          'time': feeding['time'] as String,
+        }).toList().cast<Map<String, String>>();
+      });
+    }
+  }
 
-    //adds a new feeding log
+  Future<void> _addFeeding() async {
+    TextEditingController foodController = TextEditingController();
+    TextEditingController amountController = TextEditingController();
+    _selectedType = 'Food';
+    _selectedUnit = 'Grams';
+    _selectedDate = DateTime.now();
+    _selectedTime = TimeOfDay.now();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Add new Feeding Log',
+            'Add New Feeding Log',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                    return DropdownButton<String>(
-                      value: _selectedType,
-                      items: [
-                        DropdownMenuItem(child: Text('Food'), value: 'Food'),
-                        DropdownMenuItem(child: Text('Water'), value: 'Water'),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedType = value!;
-                        });
-                      },
-                      hint: Text('Select Type'),
-                    );
-                  },
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Food input
+                TextField(
+                  controller: foodController,
+                  decoration: InputDecoration(labelText: 'Food'),
                 ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: amountController,
-                      decoration: InputDecoration(labelText: 'Amount'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  StatefulBuilder(
+                // Type selection
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: StatefulBuilder(
                     builder: (BuildContext context, StateSetter setState) {
                       return DropdownButton<String>(
-                        value: _selectedUnit,
+                        value: _selectedType,
                         items: [
-                          DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
-                          DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
-                          DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
+                          DropdownMenuItem(child: Text('Food'), value: 'Food'),
+                          DropdownMenuItem(child: Text('Water'), value: 'Water'),
                         ],
                         onChanged: (value) {
                           setState(() {
-                            _selectedUnit = value!;
+                            _selectedType = value!;
                           });
                         },
+                        hint: Text('Select Type'),
                       );
                     },
                   ),
-                ],
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Date'),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _selectedDate = pickedDate;
-                    });
-                  }
-                },
-                readOnly: true,
-                controller: TextEditingController(
-                  text: DateFormat('MM/dd/yyyy').format(_selectedDate),
                 ),
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Time'),
-                onTap: () async {
-                  TimeOfDay? pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: _selectedTime,
-                  );
-                  if (pickedTime != null) {
-                    setState(() {
-                      _selectedTime = pickedTime;
-                    });
-                  }
-                },
-                readOnly: true,
-                controller: TextEditingController(
-                  text: _selectedTime.format(context),
+                // Amount and Unit
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: amountController,
+                        decoration: InputDecoration(labelText: 'Amount'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    StatefulBuilder(
+                      builder: (BuildContext context, StateSetter setState) {
+                        return DropdownButton<String>(
+                          value: _selectedUnit,
+                          items: [
+                            DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
+                            DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
+                            DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedUnit = value!;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final newFeeding = {
-                    'pet_id': _selectedPetId,
-                    'food': nameController.text,
-                    'type': _selectedType,
-                    'amount': double.parse(amountController.text),
-                    'unit': _selectedUnit,
-                    'date': DateFormat('MM/dd/yyyy').format(_selectedDate),
-                    'time': _selectedTime.format(context),
-                  };
-                  //inserts new feeding log into database
-                  await DatabaseHelper.insert(
-                    'feedings',
-                    newFeeding.map((key, value) => MapEntry(key, value ?? '')),
-                  );
-                  await _loadFeedings();
-                  Navigator.of(context).pop();
-                },
-                child: Text('Add Log'),
-              ),
-            ],
+                // Date picker
+                TextField(
+                  decoration: InputDecoration(labelText: 'Date'),
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null) {
+                      setState(() {
+                        _selectedDate = pickedDate;
+                      });
+                    }
+                  },
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: DateFormat('MM/dd/yyyy').format(_selectedDate),
+                  ),
+                ),
+                // Time picker
+                TextField(
+                  decoration: InputDecoration(labelText: 'Time'),
+                  onTap: () async {
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: _selectedTime,
+                    );
+                    if (pickedTime != null) {
+                      setState(() {
+                        _selectedTime = pickedTime;
+                      });
+                    }
+                  },
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: _selectedTime.format(context),
+                  ),
+                ),
+              ],
+            ),
           ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                // Insert into database
+                await DatabaseHelper.insertFeedingLog({
+                  'pet_id': _selectedPetId!,
+                  'food': foodController.text,
+                  'type': _selectedType,
+                  'amount': double.parse(amountController.text),
+                  'unit': _selectedUnit,
+                  'date': DateFormat('MM/dd/yyyy').format(_selectedDate),
+                  'time': _selectedTime.format(context),
+                });
+                Navigator.of(context).pop();
+                _loadFeedings();
+              },
+              child: Text('Add Log'),
+            ),
+          ],
         );
       },
     );
   }
 
-  //edits a feeding log
-  void _editFeeding(int index) {
-    //gets the index that needs editing
-    final feeding = _feedings[index];
-    TextEditingController nameController = TextEditingController(text: feeding['name']);
+  Future<void> _editFeeding(int index) async {
+    Map<String, String> feeding = _feedings[index];
+    TextEditingController foodController = TextEditingController(text: feeding['food']);
     TextEditingController amountController = TextEditingController(text: feeding['amount']);
-    String selectedType = feeding['type'];
-    String selectedUnit = feeding['unit'];
-    DateTime selectedDate = DateFormat('MM/dd/yyyy').parse(feeding['date']);
+    String selectedType = feeding['type']!;
+    String selectedUnit = feeding['unit']!;
+    // Parse date using the known format
+    DateTime selectedDate = DateFormat('MM/dd/yyyy').parse(feeding['date']!);
+    // Parse time (assuming format like '10:30 AM')
+    List<String> timeParts = feeding['time']!.split(RegExp('[: ]'));
     TimeOfDay selectedTime = TimeOfDay(
-      hour: int.parse(feeding['time'].split(":")[0]),
-      minute: int.parse(feeding['time'].split(":")[1]),
+      hour: int.parse(timeParts[0]),
+      minute: int.parse(timeParts[1]),
     );
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Log'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
-                  ),
-                  DropdownButton<String>(
-                    value: selectedType,
-                    items: [
-                      DropdownMenuItem(child: Text('Food'), value: 'Food'),
-                      DropdownMenuItem(child: Text('Water'), value: 'Water'),
-                      DropdownMenuItem(child: Text('Medicine'), value: 'Medicine'),
-                      DropdownMenuItem(child: Text('Treat'), value: 'Treat'),
-                      DropdownMenuItem(child: Text('Other'), value: 'Other'),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedType = value!;
-                      });
-                    },
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: amountController,
-                          decoration: InputDecoration(labelText: 'Amount'),
-                          keyboardType: TextInputType.number,
+          title: Text('Edit Feeding Log'),
+          content: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: foodController,
+                      decoration: InputDecoration(labelText: 'Food'),
+                    ),
+                    DropdownButton<String>(
+                      value: selectedType,
+                      items: [
+                        DropdownMenuItem(child: Text('Food'), value: 'Food'),
+                        DropdownMenuItem(child: Text('Water'), value: 'Water'),
+                        DropdownMenuItem(child: Text('Medicine'), value: 'Medicine'),
+                        DropdownMenuItem(child: Text('Treat'), value: 'Treat'),
+                        DropdownMenuItem(child: Text('Other'), value: 'Other'),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedType = value!;
+                        });
+                      },
+                      hint: Text('Select Type'),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: amountController,
+                            decoration: InputDecoration(labelText: 'Amount'),
+                            keyboardType: TextInputType.number,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      DropdownButton<String>(
-                        value: selectedUnit,
-                        items: [
-                          DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
-                          DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
-                          DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
-                        ],
-                        onChanged: (value) {
+                        SizedBox(width: 10),
+                        DropdownButton<String>(
+                          value: selectedUnit,
+                          items: [
+                            DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
+                            DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
+                            DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              selectedUnit = value!;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Date'),
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (pickedDate != null) {
                           setState(() {
-                            selectedUnit = value!;
+                            selectedDate = pickedDate;
                           });
-                        },
+                        }
+                      },
+                      readOnly: true,
+                      controller: TextEditingController(
+                        text: DateFormat('MM/dd/yyyy').format(selectedDate),
                       ),
-                    ],
-                  ),
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Date'),
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (pickedDate != null) {
-                        setState(() {
-                          selectedDate = pickedDate;
-                        });
-                      }
-                    },
-                    readOnly: true,
-                    controller: TextEditingController(
-                      text: DateFormat('MM/dd/yyyy').format(selectedDate),
                     ),
-                  ),
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Time'),
-                    onTap: () async {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: selectedTime,
-                      );
-                      if (pickedTime != null) {
-                        setState(() {
-                          selectedTime = pickedTime;
-                        });
-                      }
-                    },
-                    readOnly: true,
-                    controller: TextEditingController(
-                      text: selectedTime.format(context),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Time'),
+                      onTap: () async {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime,
+                        );
+                        if (pickedTime != null) {
+                          setState(() {
+                            selectedTime = pickedTime;
+                          });
+                        }
+                      },
+                      readOnly: true,
+                      controller: TextEditingController(
+                        text: selectedTime.format(context),
+                      ),
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      //update the feeding log in the database
-                      final updatedFeeding = {
-                        'id': feeding['id'], 
-                        'pet_id': _selectedPetId,
-                        'food': nameController.text,
-                        'type': selectedType,
-                        'amount': double.parse(amountController.text),
-                        'unit': selectedUnit,
-                        'date': DateFormat('MM/dd/yyyy').format(selectedDate),
-                        'time': selectedTime.format(context),
-                      };
-                      await DatabaseHelper.update('feedings', updatedFeeding.cast<String, Object>());
-
-                      //reload the feedings
-                      await _loadFeedings();
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Save Changes'),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                // Build the updated feeding log map
+                Map<String, Object> updatedLog = {
+                  'id': int.parse(feeding['id']!),
+                  'pet_id': _selectedPetId!,
+                  'food': foodController.text,
+                  'type': selectedType,
+                  'amount': double.parse(amountController.text),
+                  'unit': selectedUnit,
+                  'date': DateFormat('MM/dd/yyyy').format(selectedDate),
+                  'time': selectedTime.format(context),
+                };
+                await DatabaseHelper.updateFeedingLog(updatedLog);
+                Navigator.of(context).pop();
+                _loadFeedings();
+              },
+              child: Text('Save Changes'),
+            ),
+          ],
         );
       },
     );
   }
 
-  //deletes a feeding log
-  void _deleteFeeding(int index) {
-    setState(() {
-      _feedings.removeAt(index);
-    });
+  Future<void> _deleteFeeding(int index) async {
+    String? idStr = _feedings[index]['id'];
+    if (idStr != null) {
+      int id = int.parse(idStr);
+      await DatabaseHelper.deleteFeedingLog(id);
+      _loadFeedings();
+    }
   }
 
-  //views logs for a specific day
   void _viewLogsForDay(int dayIndex) {
     _filterFeedingsByDay(dayIndex);
     showDialog(
@@ -369,7 +376,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
                 final feeding = _filteredFeedings[index];
                 return ListTile(
                   title: Text(
-                    '${feeding['name']} - ${feeding['amount']} ${feeding['unit']}',
+                    '${feeding['food']} - ${feeding['amount']} ${feeding['unit']}',
                     style: TextStyle(fontSize: 16),
                   ),
                   subtitle: Text(
@@ -401,7 +408,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/home'),
+          onPressed: () => Navigator.pushNamed(context, '/home',arguments: widget.petId),
         ),
         title: Text(
           'Feeding Schedule',
@@ -446,7 +453,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
                 return GestureDetector(
                   onTap: () => _viewLogsForDay(index),
                   child: Container(
-                    margin: const EdgeInsets.only(left: 5, right: 5),
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 70,
                     width: 50,
                     decoration: BoxDecoration(
@@ -454,8 +461,8 @@ class _FeedingScreenState extends State<FeedingScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 10),
                         Text(
                           weekdays[index],
                           style: TextStyle(
@@ -481,12 +488,31 @@ class _FeedingScreenState extends State<FeedingScreen> {
                   margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   child: ListTile(
                     title: Text(
-                      '${feeding['name']} - ${feeding['amount']} ${feeding['unit']}',
+                      '${feeding['food']} - ${feeding['amount']} ${feeding['unit']}',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
                       '${feeding['type']} on ${feeding['date']} at ${feeding['time']}',
                       style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _editFeeding(index);
+                        } else if (value == 'delete') {
+                          _deleteFeeding(index);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Edit'),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Delete'),
+                        ),
+                      ],
                     ),
                   ),
                 );
