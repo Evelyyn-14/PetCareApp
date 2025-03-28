@@ -177,7 +177,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               width: 350,
               height: 130,
               decoration: BoxDecoration(
-                color: Colors.orange, // Changed to orange color
+                color: Colors.orangeAccent,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Center(
@@ -186,7 +186,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // Adjusted text color for better contrast
                   ),
                 ),
               ),

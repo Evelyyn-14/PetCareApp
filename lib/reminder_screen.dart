@@ -151,17 +151,18 @@ class _ReminderScreenState extends State<ReminderScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  _reminders[index] = {
-                    'id': reminder['id'],
-                    'date': reminder['date'],
-                    'title': titleController.text,
-                    'description': descriptionController.text,
-                    'time': selectedTime.format(context),
-                  };
-                });
+              onPressed: () async {
+                final updatedReminder = {
+                  'id': reminder['id'],
+                  'pet_id': widget.petId,
+                  'date': reminder['date'],
+                  'title': titleController.text,
+                  'description': descriptionController.text,
+                  'time': selectedTime.format(context),
+                };
+                await DatabaseHelper.updateReminder(updatedReminder.cast<String, Object>());
                 Navigator.of(context).pop();
+                _loadRemindersFromDatabase(); 
               },
               child: Text('Save'),
             ),
@@ -172,10 +173,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   //deletes a reminder from the database
-  void _deleteReminder(int index) {
-    setState(() {
-      _reminders.removeAt(index);
-    });
+  void _deleteReminder(int index) async {
+    final reminderId = _reminders[index]['id'];
+    if (reminderId != null) {
+      await DatabaseHelper.deleteReminder(reminderId); 
+      _loadRemindersFromDatabase();
+    }
   }
 
   List<Map<String, dynamic>> _getRemindersForDay(DateTime day) {
