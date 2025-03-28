@@ -24,7 +24,7 @@ class _CareScreenState extends State<CareScreen> {
             Align(
               alignment: Alignment.topCenter,
               child: Container(
-                margin: EdgeInsets.only(top: 50),
+                margin: EdgeInsets.only(top: 10),
                 width: 250,
                 height: 70,
                 decoration: BoxDecoration(
@@ -66,7 +66,7 @@ class _CareScreenState extends State<CareScreen> {
                 final List<Map<String, String>> tips = [
                   {
                     "heading": "Litter Box Maintenance",
-                    "paragraph": "Keep the litter box clean and in quiet, accessible location. Scoop daily and change the litter regularly to prevent odor and encourage proper use."
+                    "paragraph": "Keep the litter box clean, in an accessible location. Scoop daily and change the litter regularly to prevent odor."
                   },
                   {
                     "heading": "Balanced Diet",
@@ -98,7 +98,7 @@ class _CareScreenState extends State<CareScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(height: 14),
                       Text(
                         tips[index]["paragraph"]!,
                         style: TextStyle(

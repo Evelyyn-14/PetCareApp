@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 class FeedingScreen extends StatefulWidget {
   const FeedingScreen({super.key});
 
+  set selectedPetId(int selectedPetId) {}
+
   @override
   State<FeedingScreen> createState() => _FeedingScreenState();
 }
@@ -18,18 +20,48 @@ class _FeedingScreenState extends State<FeedingScreen> {
   Color activeTextColor = Colors.black;
   Color inactiveTextColor = Colors.white;
 
+  //default values for new feeding log
   String _selectedType = 'Food';
   String _selectedUnit = 'Grams';
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  List<Map<String, String>> _feedings = [];
-  List<Map<String, String>> _filteredFeedings = [];
+  //list of feedings
+  List<Map<String, dynamic>> _feedings = [];
+  List<Map<String, dynamic>> _filteredFeedings = [];
 
-  int _getDayIndex(DateTime date) {
-    return date.weekday - 1; // Convert to 0-based index (Monday = 0, Sunday = 6)
+  //gets the selected pet id in order to load feedings
+  int? _selectedPetId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeedings();
   }
 
+  //loads feedings from database
+  Future<void> _loadFeedings() async {
+    if (_selectedPetId != null) {
+      final feedings = await DatabaseHelper.getFeedingsByPetId(_selectedPetId!);
+      setState(() {
+        _feedings = feedings.map((feeding) => {
+          'name': feeding['food'],
+          'type': feeding['type'],
+          'amount': feeding['amount'].toString(),
+          'unit': feeding['unit'],
+          'date': feeding['date'],
+          'time': feeding['time'],
+        }).toList();
+      });
+    }
+  }
+
+  //gets the index of the day
+  int _getDayIndex(DateTime date) {
+    return date.weekday - 1; 
+  }
+
+  //filters feedings by day
   void _filterFeedingsByDay(int dayIndex) {
     setState(() {
       _filteredFeedings = _feedings.where((feeding) {
@@ -39,6 +71,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
     });
   }
 
+  //adds a new feeding log
   void _addFeeding() {
     TextEditingController nameController = TextEditingController();
     TextEditingController amountController = TextEditingController();
@@ -55,7 +88,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              //allows user to input name
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(labelText: 'Name'),
@@ -64,7 +96,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
                 alignment: Alignment.centerLeft,
                 child: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
-                    //allows user to choose type
                     return DropdownButton<String>(
                       value: _selectedType,
                       items: [
@@ -84,7 +115,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
               Row(
                 children: [
                   Expanded(
-                    //allows user to input amount
                     child: TextField(
                       controller: amountController,
                       decoration: InputDecoration(labelText: 'Amount'),
@@ -94,7 +124,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
                   SizedBox(width: 10),
                   StatefulBuilder(
                     builder: (BuildContext context, StateSetter setState) {
-                      //allows user to choose unit
                       return DropdownButton<String>(
                         value: _selectedUnit,
                         items: [
@@ -112,7 +141,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
                   ),
                 ],
               ),
-              //allows user to choose date 
               TextField(
                 decoration: InputDecoration(labelText: 'Date'),
                 onTap: () async {
@@ -133,7 +161,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
                   text: DateFormat('MM/dd/yyyy').format(_selectedDate),
                 ),
               ),
-              //allows user to choose time
               TextField(
                 decoration: InputDecoration(labelText: 'Time'),
                 onTap: () async {
@@ -152,19 +179,23 @@ class _FeedingScreenState extends State<FeedingScreen> {
                   text: _selectedTime.format(context),
                 ),
               ),
-              //button to add log
               ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _feedings.add({
-                      'name': nameController.text,
-                      'type': _selectedType,
-                      'amount': amountController.text,
-                      'unit': _selectedUnit,
-                      'date': DateFormat('MM/dd/yyyy').format(_selectedDate),
-                      'time': _selectedTime.format(context),
-                    });
-                  });
+                onPressed: () async {
+                  final newFeeding = {
+                    'pet_id': _selectedPetId,
+                    'food': nameController.text,
+                    'type': _selectedType,
+                    'amount': double.parse(amountController.text),
+                    'unit': _selectedUnit,
+                    'date': DateFormat('MM/dd/yyyy').format(_selectedDate),
+                    'time': _selectedTime.format(context),
+                  };
+                  //inserts new feeding log into database
+                  await DatabaseHelper.insert(
+                    'feedings',
+                    newFeeding.map((key, value) => MapEntry(key, value ?? '')),
+                  );
+                  await _loadFeedings();
                   Navigator.of(context).pop();
                 },
                 child: Text('Add Log'),
@@ -176,15 +207,18 @@ class _FeedingScreenState extends State<FeedingScreen> {
     );
   }
 
+  //edits a feeding log
   void _editFeeding(int index) {
-    TextEditingController nameController = TextEditingController(text: _feedings[index]['name']);
-    TextEditingController amountController = TextEditingController(text: _feedings[index]['amount']);
-    String selectedType = _feedings[index]['type']!;
-    String selectedUnit = _feedings[index]['unit']!;
-    DateTime selectedDate = DateTime.parse(_feedings[index]['date']!);
+    //gets the index that needs editing
+    final feeding = _feedings[index];
+    TextEditingController nameController = TextEditingController(text: feeding['name']);
+    TextEditingController amountController = TextEditingController(text: feeding['amount']);
+    String selectedType = feeding['type'];
+    String selectedUnit = feeding['unit'];
+    DateTime selectedDate = DateFormat('MM/dd/yyyy').parse(feeding['date']);
     TimeOfDay selectedTime = TimeOfDay(
-      hour: int.parse(_feedings[index]['time']!.split(":")[0]),
-      minute: int.parse(_feedings[index]['time']!.split(":")[1]),
+      hour: int.parse(feeding['time'].split(":")[0]),
+      minute: int.parse(feeding['time'].split(":")[1]),
     );
 
     showDialog(
@@ -215,7 +249,6 @@ class _FeedingScreenState extends State<FeedingScreen> {
                         selectedType = value!;
                       });
                     },
-                    hint: Text('Select Type'),
                   ),
                   Row(
                     children: [
@@ -230,9 +263,9 @@ class _FeedingScreenState extends State<FeedingScreen> {
                       DropdownButton<String>(
                         value: selectedUnit,
                         items: [
-                          DropdownMenuItem(child: Text('grams'), value: 'grams'),
-                          DropdownMenuItem(child: Text('ounces'), value: 'ounces'),
-                          DropdownMenuItem(child: Text('pieces'), value: 'pieces'),
+                          DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
+                          DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
+                          DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -259,7 +292,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
                     },
                     readOnly: true,
                     controller: TextEditingController(
-                      text: "${selectedDate.toLocal()}".split(' ')[0],
+                      text: DateFormat('MM/dd/yyyy').format(selectedDate),
                     ),
                   ),
                   TextField(
@@ -281,17 +314,22 @@ class _FeedingScreenState extends State<FeedingScreen> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _feedings[index] = {
-                          'name': nameController.text,
-                          'type': selectedType,
-                          'amount': amountController.text,
-                          'unit': selectedUnit,
-                          'date': "${selectedDate.toLocal()}".split(' ')[0],
-                          'time': selectedTime.format(context),
-                        };
-                      });
+                    onPressed: () async {
+                      //update the feeding log in the database
+                      final updatedFeeding = {
+                        'id': feeding['id'], 
+                        'pet_id': _selectedPetId,
+                        'food': nameController.text,
+                        'type': selectedType,
+                        'amount': double.parse(amountController.text),
+                        'unit': selectedUnit,
+                        'date': DateFormat('MM/dd/yyyy').format(selectedDate),
+                        'time': selectedTime.format(context),
+                      };
+                      await DatabaseHelper.update('feedings', updatedFeeding.cast<String, Object>());
+
+                      //reload the feedings
+                      await _loadFeedings();
                       Navigator.of(context).pop();
                     },
                     child: Text('Save Changes'),
@@ -305,12 +343,14 @@ class _FeedingScreenState extends State<FeedingScreen> {
     );
   }
 
+  //deletes a feeding log
   void _deleteFeeding(int index) {
     setState(() {
       _feedings.removeAt(index);
     });
   }
 
+  //views logs for a specific day
   void _viewLogsForDay(int dayIndex) {
     _filterFeedingsByDay(dayIndex);
     showDialog(

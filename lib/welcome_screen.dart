@@ -1,31 +1,13 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'home_screen.dart';
 
 class CatProfile {
-  final int id;
   final String name;
   final String age;
   final String gender;
 
-  CatProfile({required this.id, required this.name, required this.age, required this.gender});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'age': age,
-      'gender': gender,
-    };
-  }
-
-  factory CatProfile.fromMap(Map<String, dynamic> map) {
-    return CatProfile(
-      id: map['id'],
-      name: map['name'],
-      age: map['age'].toString(),
-      gender: map['gender'],
-    );
-  }
+  CatProfile({required this.name, required this.age, required this.gender});
 }
 
 class WelcomeScreen extends StatefulWidget {
@@ -47,14 +29,85 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     _loadProfiles();
   }
 
+  //loads saved profiles from the database
   Future<void> _loadProfiles() async {
     final profiles = await DatabaseHelper.queryAllRows('pets');
     setState(() {
-      _catProfiles.clear();
-      _catProfiles.addAll(profiles.map((profile) => CatProfile.fromMap(profile)).toList());
+      _catProfiles.addAll(profiles.map((profile) => CatProfile(
+        name: profile['name'],
+        age: profile['age'].toString(),
+        gender: profile['gender'],
+      )));
     });
   }
 
+  //saves the profile information to the database
+  void _saveProfile() async {
+    final data = {
+      'name': _nameController.text,
+      'age': double.parse(_ageController.text),
+      'gender': _genderController.text,
+    };
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    await db.insert('pets', data);
+  }
+
+  //deletes the profile information from the database
+  Future<void> _deleteProfile(int index, String name) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete('pets', where: 'name = ?', whereArgs: [name]);
+    setState(() {
+      _catProfiles.removeAt(index);
+    });
+  }
+
+  //edits the profile information in the database
+  Future<void> _editProfile(int index, String name) async {
+    final updatedName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        final TextEditingController _editNameController = TextEditingController(text: name);
+        return AlertDialog(
+          title: Text('Edit Profile'),
+          content: TextField(
+            controller: _editNameController,
+            decoration: InputDecoration(labelText: 'Cat Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(_editNameController.text),
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    //updates the profile information in the database
+    if (updatedName != null && updatedName.isNotEmpty) {
+      final db = await DatabaseHelper.instance.database;
+      await db.update(
+        'pets',
+        {'name': updatedName},
+        where: 'name = ?',
+        whereArgs: [name],
+      );
+      setState(() {
+        _catProfiles[index] = CatProfile(
+          name: updatedName,
+          age: _catProfiles[index].age,
+          gender: _catProfiles[index].gender,
+        );
+      });
+    }
+  }
+
+  //opens a dialog to add a new profile
   void _addProfile() {
     _nameController.clear();
     _ageController.clear();
@@ -90,15 +143,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () async {
-                final newProfile = CatProfile(
-                  id: 0, 
-                  name: _nameController.text,
-                  age: _ageController.text,
-                  gender: _genderController.text,
-                );
-                await DatabaseHelper.insert('pets', newProfile.toMap().cast<String, Object>());
-                _loadProfiles();
+              onPressed: () {
+                setState(() {
+                  _catProfiles.add(CatProfile(
+                    name: _nameController.text,
+                    age: _ageController.text,
+                    gender: _genderController.text,
+                  ));
+                });
+                _saveProfile();
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
@@ -107,11 +160,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         );
       },
     );
-  }
-
-  void _deleteProfile(int id) async {
-    await DatabaseHelper.delete('pets', id);
-    _loadProfiles();
   }
 
   @override
@@ -140,6 +188,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
             ),
           ),
+          SizedBox(height: 20),
           Expanded(
             child: GridView.builder(
               padding: EdgeInsets.all(40),
@@ -149,28 +198,64 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               itemCount: _catProfiles.length,
               itemBuilder: (context, index) {
                 final catProfileInfo = _catProfiles[index];
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onLongPress: () => _deleteProfile(catProfileInfo.id),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 234, 176, 109),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        height: 125,
-                        width: 125,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.pets, size: 50),
-                          ],
-                        ),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(),
+                        settings: RouteSettings(arguments: catProfileInfo),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(catProfileInfo.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                  ],
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 234, 176, 109),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            height: 125,
+                            width: 125,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.pets, size: 50),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            top: 5,
+                            right: 5,
+                            child: PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  _editProfile(index, catProfileInfo.name);
+                                } else if (value == 'delete') {
+                                  _deleteProfile(index, catProfileInfo.name);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Delete'),
+                                ),
+                              ],
+                              icon: Icon(Icons.more_vert),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Text(catProfileInfo.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 );
               },
             ),
