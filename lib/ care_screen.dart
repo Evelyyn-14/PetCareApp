@@ -109,7 +109,7 @@ class _CareScreenState extends State<CareScreen> {
                     ];
                     return Container(
                       decoration: BoxDecoration(
-                        color: cardContainerColor,
+                        color: Color.fromARGB(228, 252, 239, 165),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.all(5.0),
@@ -138,49 +138,106 @@ class _CareScreenState extends State<CareScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 30),
-                Text(
-                  '-- Common Illnesses --',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey,
+                SizedBox(height: 30),
+            Text(
+              '-- Common Illnesses --',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            ListView(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(228, 252, 239, 165),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: cardContainerColor,
-                        borderRadius: BorderRadius.circular(15),
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Upper Respiratory Infections (URI)",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Upper Respiratory Infections (URI)",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "Symptoms include sneezing, nasal congestion, watery eyes, and fever. Consult a vet for treatment.",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: textColor,
-                            ),
-                          ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Symptoms include sneezing, nasal congestion, watery eyes, and Fever. May be caused by viruses or bacteria. Consult a vet for treatment.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(228, 252, 239, 165),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Feline Lower Urinary Tract Disease (FLUTD)",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Symptoms include frequent or painful urination and blood in the urine. It can be caused by urinary crystals, bladder stones, or infections. Consult a vet for diagnosis and treatment.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(228, 252, 239, 165),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Feline Dental Disease",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Symptoms include bad breath, difficulty eating, and drooling. Make sure to brush your cat's teeth regularly and provide dental treats. Consult a vet for professional cleaning.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
                         ],
                       ),
                     ),
