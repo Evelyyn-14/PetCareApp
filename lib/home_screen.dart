@@ -68,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          'Welcome ProfileName!',
+                          'Welcome',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: textColor,
                           ),

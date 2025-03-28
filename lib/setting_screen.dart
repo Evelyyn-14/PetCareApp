@@ -11,7 +11,6 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  bool _nightMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +57,6 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Placeholder',
-                    style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
                 Container(
                   margin: const EdgeInsets.only(top: 50),
                   width: 300,
