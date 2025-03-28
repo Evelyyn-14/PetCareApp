@@ -109,7 +109,7 @@ class _CareScreenState extends State<CareScreen> {
                     ];
                     return Container(
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(228, 252, 239, 165),
+                        color: cardContainerColor,
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.all(5.0),
@@ -157,7 +157,7 @@ class _CareScreenState extends State<CareScreen> {
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(228, 252, 239, 165),
+                    color: cardContainerColor,
                     borderRadius: BorderRadius.circular(15),
                   ),
                   padding: const EdgeInsets.all(10.0),
@@ -169,7 +169,7 @@ class _CareScreenState extends State<CareScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                       SizedBox(height: 10),
@@ -177,7 +177,7 @@ class _CareScreenState extends State<CareScreen> {
                         "Symptoms include sneezing, nasal congestion, watery eyes, and Fever. May be caused by viruses or bacteria. Consult a vet for treatment.",
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                     ],
@@ -186,7 +186,7 @@ class _CareScreenState extends State<CareScreen> {
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(228, 252, 239, 165),
+                    color: cardContainerColor,
                     borderRadius: BorderRadius.circular(15),
                   ),
                   padding: const EdgeInsets.all(10.0),
@@ -198,7 +198,7 @@ class _CareScreenState extends State<CareScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                       SizedBox(height: 10),
@@ -206,7 +206,7 @@ class _CareScreenState extends State<CareScreen> {
                         "Symptoms include frequent or painful urination and blood in the urine. It can be caused by urinary crystals, bladder stones, or infections. Consult a vet for diagnosis and treatment.",
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                     ],
@@ -215,7 +215,7 @@ class _CareScreenState extends State<CareScreen> {
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(228, 252, 239, 165),
+                    color: cardContainerColor,
                     borderRadius: BorderRadius.circular(15),
                   ),
                   padding: const EdgeInsets.all(10.0),
@@ -227,7 +227,7 @@ class _CareScreenState extends State<CareScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                       SizedBox(height: 10),
@@ -235,7 +235,7 @@ class _CareScreenState extends State<CareScreen> {
                         "Symptoms include bad breath, difficulty eating, and drooling. Make sure to brush your cat's teeth regularly and provide dental treats. Consult a vet for professional cleaning.",
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                         ],
