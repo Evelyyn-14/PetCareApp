@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
-import 'home_screen.dart';
 
 class CatProfile {
   final int id; 
@@ -69,11 +68,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final updatedName = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController _editNameController = TextEditingController(text: name);
+        final TextEditingController editNameController = TextEditingController(text: name);
         return AlertDialog(
           title: Text('Edit Profile'),
           content: TextField(
-            controller: _editNameController,
+            controller: editNameController,
             decoration: InputDecoration(labelText: 'Cat Name'),
           ),
           actions: [
@@ -82,7 +81,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(_editNameController.text),
+              onPressed: () => Navigator.of(context).pop(editNameController.text),
               child: Text('Save'),
             ),
           ],
@@ -178,7 +177,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               width: 350,
               height: 130,
               decoration: BoxDecoration(
-                color: Colors.orangeAccent,
+                color: Colors.orange, // Changed to orange color
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Center(
@@ -187,6 +186,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white, // Adjusted text color for better contrast
                   ),
                 ),
               ),

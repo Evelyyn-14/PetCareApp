@@ -22,13 +22,7 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: (db, version) async {
-        await createTables(db);
-        await db.execute('''
-          CREATE TABLE profile (
-            id INTEGER PRIMARY KEY,
-            nightMode INTEGER
-          )
-        ''');
+        await createTables(db); // Ensure all tables are created
       },
     );
   }
@@ -78,8 +72,20 @@ class DatabaseHelper {
         FOREIGN KEY (pet_id) REFERENCES pets(id)
       )
     ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reminders (
+        id INTEGER PRIMARY KEY,
+        pet_id INTEGER,
+        date TEXT,
+        time TEXT,
+        title TEXT,
+        description TEXT,
+        FOREIGN KEY (pet_id) REFERENCES pets(id)
+      )
+    '''); 
   }
 
+  //gets the profile information by id
   static Future<sql.Database> getStaticDatabase() async {
     return sql.openDatabase(
       'database',
@@ -155,6 +161,47 @@ class DatabaseHelper {
       feedingLog,
       where: 'id = ?',
       whereArgs: [feedingLog['id']],
+    );
+  }
+
+  //inserts reminder into the reminders table
+  static Future<void> insertReminder(Map<String, Object> reminder) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.insert(
+      'reminders',
+      reminder,
+      conflictAlgorithm: sql.ConflictAlgorithm.replace,
+    );
+  }
+
+  //gets all reminders by pet_id
+  static Future<List<Map<String, dynamic>>> getRemindersByPetId(int petId) async {
+    final db = await DatabaseHelper.instance.database;
+    return db.query(
+      'reminders',
+      where: 'pet_id = ?',
+      whereArgs: [petId],
+    );
+  }
+
+  //updates a reminder by its ID
+  static Future<void> updateReminder(Map<String, Object> reminder) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.update(
+      'reminders',
+      reminder,
+      where: 'id = ?',
+      whereArgs: [reminder['id']],
+    );
+  }
+
+  //deletes a reminder by its ID
+  static Future<void> deleteReminder(int id) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete(
+      'reminders',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

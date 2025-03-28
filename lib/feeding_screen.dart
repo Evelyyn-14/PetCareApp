@@ -99,8 +99,8 @@ class _FeedingScreenState extends State<FeedingScreen> {
                       return DropdownButton<String>(
                         value: _selectedType,
                         items: [
-                          DropdownMenuItem(child: Text('Food'), value: 'Food'),
-                          DropdownMenuItem(child: Text('Water'), value: 'Water'),
+                          DropdownMenuItem(value: 'Food', child: Text('Food')),
+                          DropdownMenuItem(value: 'Water', child: Text('Water')),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -128,9 +128,9 @@ class _FeedingScreenState extends State<FeedingScreen> {
                         return DropdownButton<String>(
                           value: _selectedUnit,
                           items: [
-                            DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
-                            DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
-                            DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
+                            DropdownMenuItem(value: 'Grams', child: Text('Grams')),
+                            DropdownMenuItem(value: 'Milliliters', child: Text('Milliliters')),
+                            DropdownMenuItem(value: 'Ounces', child: Text('Ounces')),
                           ],
                           onChanged: (value) {
                             setState(() {
@@ -242,11 +242,11 @@ class _FeedingScreenState extends State<FeedingScreen> {
                     DropdownButton<String>(
                       value: selectedType,
                       items: [
-                        DropdownMenuItem(child: Text('Food'), value: 'Food'),
-                        DropdownMenuItem(child: Text('Water'), value: 'Water'),
-                        DropdownMenuItem(child: Text('Medicine'), value: 'Medicine'),
-                        DropdownMenuItem(child: Text('Treat'), value: 'Treat'),
-                        DropdownMenuItem(child: Text('Other'), value: 'Other'),
+                        DropdownMenuItem(value: 'Food', child: Text('Food')),
+                        DropdownMenuItem(value: 'Water', child: Text('Water')),
+                        DropdownMenuItem(value: 'Medicine', child: Text('Medicine')),
+                        DropdownMenuItem(value: 'Treat', child: Text('Treat')),
+                        DropdownMenuItem(value: 'Other', child: Text('Other')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -268,9 +268,9 @@ class _FeedingScreenState extends State<FeedingScreen> {
                         DropdownButton<String>(
                           value: selectedUnit,
                           items: [
-                            DropdownMenuItem(child: Text('Grams'), value: 'Grams'),
-                            DropdownMenuItem(child: Text('Milliliters'), value: 'Milliliters'),
-                            DropdownMenuItem(child: Text('Ounces'), value: 'Ounces'),
+                            DropdownMenuItem(value: 'Grams', child: Text('Grams')),
+                            DropdownMenuItem(value: 'Milliliters', child: Text('Milliliters')),
+                            DropdownMenuItem(value: 'Ounces', child: Text('Ounces')),
                           ],
                           onChanged: (value) {
                             setState(() {
@@ -408,7 +408,7 @@ class _FeedingScreenState extends State<FeedingScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/home',arguments: widget.petId),
+          onPressed: () => Navigator.pushNamed(context, '/home', arguments: widget.petId),
         ),
         title: Text(
           'Feeding Schedule',
