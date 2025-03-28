@@ -22,7 +22,7 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: (db, version) async {
-        await createTables(db); // Ensure all tables are created
+        await createTables(db);
       },
     );
   }

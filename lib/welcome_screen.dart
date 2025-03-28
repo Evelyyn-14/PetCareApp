@@ -22,7 +22,7 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _genderController = TextEditingController();
+  String _selectedGender = 'Male';
   final List<CatProfile> _catProfiles = [];
 
   @override
@@ -49,7 +49,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final data = {
       'name': _nameController.text,
       'age': double.parse(_ageController.text),
-      'gender': _genderController.text,
+      'gender': _selectedGender,
     };
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
@@ -116,7 +116,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _addProfile() {
     _nameController.clear();
     _ageController.clear();
-    _genderController.clear();
+    _selectedGender = 'Male'; // Reset gender selection
 
     showDialog(
       context: context,
@@ -134,8 +134,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 controller: _ageController,
                 decoration: const InputDecoration(labelText: 'Cat Age'),
               ),
-              TextField(
-                controller: _genderController,
+              DropdownButtonFormField<String>(
+                value: _selectedGender,
+                items: const [
+                  DropdownMenuItem(value: 'Male', child: Text('Male')),
+                  DropdownMenuItem(value: 'Female', child: Text('Female')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value!;
+                  });
+                },
                 decoration: const InputDecoration(labelText: 'Cat Gender'),
               ),
             ],
@@ -154,7 +163,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     id: _catProfiles.length + 1,
                     name: _nameController.text,
                     age: _ageController.text,
-                    gender: _genderController.text,
+                    gender: _selectedGender,
                   ));
                 });
                 _saveProfile();
